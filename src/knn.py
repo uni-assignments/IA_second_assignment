@@ -3,15 +3,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
-from sklearn.neighbors import KNeighborsClassifier
-from main import read_data, divide_features_and_label, euclidean_distance
+from utils import read_data, divide_features_and_label, euclidean_distance
+from metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 
-def most_frequent(List):
+def most_frequent(List: list) -> str:
+    """
+    Returns the most frequent element in a list. 
+    Used to find the most frequent label in the k closest neighbors.
+    """
     return max(set(List), key = List.count)
 
-def knn_predict_single(new_sample, x_train, y_train, k):
-
+def knn_predict_single(new_sample: pd.Series, x_train: pd.DataFrame, y_train: pd.DataFrame, k) -> str:
+    """
+    Returns the prediction for a single sample.
+    """
     heap = []
     for idx, features in x_train.iterrows():
         distance = euclidean_distance(new_sample, features)
@@ -21,35 +26,42 @@ def knn_predict_single(new_sample, x_train, y_train, k):
 
     return most_frequent([neighbor[1] for neighbor in nearest_neighboors])
 
-
-def knn_predict_multiple(x_train, y_train, x_test, k):
+def knn_predict_multiple(x_train: pd.DataFrame, y_train: pd.DataFrame, x_test: pd.DataFrame, k) -> list: 
+    """
+    Returns a list of predictions for the test set.
+    """
     pred = []
     for idx, features in x_test.iterrows():
         pred.append(knn_predict_single(features, x_train, y_train, k))
 
     return pred
 
-def knn_test(x_train, y_train, x_test, y_test, k = 8):
-    
+def knn_test(x_train: pd.DataFrame, y_train: pd.DataFrame, x_test: pd.DataFrame, y_test: pd.DataFrame, k = 8) -> None:
+    """
+    Prints the accuracy, precision, recall and f1 score of the implemented knn algorithm for the dataset.
+    """
     pred = knn_predict_multiple(x_train, y_train, x_test, k)
-    
-    cm = confusion_matrix(y_test, pred)
-    accuracy = accuracy_score(y_test, pred)
-    precision = precision_score(y_test, pred, average='micro')
-    recall = recall_score(y_test, pred, average='micro')
-    f1 = f1_score(y_test, pred, average='micro')
+    print(type(pred))
+    print("Confusion Matrix:")
+    print(confusion_matrix(pred, y_test))
+    print("\nAccuracy:")
+    print(accuracy_score(pred, y_test))
+    print("\nPrecision:")
+    print(precision_score(pred, y_test))
+    print("\nRecall:")
+    print(recall_score(pred, y_test))
+    print("\nF1 Score:")
+    print(f1_score(pred, y_test))
 
-    print(cm)
-    print("Accuracy: ", accuracy)
-    print("Precision: ", precision)
-    print("Recall: ", recall)
-    print("F1: ", f1)
+if __name__ == '__main__':
 
+    train_data_path = "../iris treino.csv"
+    train_data = read_data(train_data_path)
 
-def sklearn_comparison(k = 8):
-    neigh = KNeighborsClassifier(n_neighbors=k)
-    neigh.fit(x_train, y_train)
-    
-    return neigh.predict(x_test)
+    test_data_path = "../iris aleatório.csv"
+    test_data = read_data(test_data_path)
 
+    x_test, y_test = divide_features_and_label(test_data) 
+    x_train, y_train = divide_features_and_label(train_data) 
 
+    knn_test(x_train, y_train, x_test, y_test, k = 8)
