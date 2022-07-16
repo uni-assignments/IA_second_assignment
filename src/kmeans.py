@@ -1,17 +1,72 @@
-import heapq
+import heapq, random
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+
 from pip import main
+from collections import defaultdict
+from typing import List
 
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
-from main import read_data, divide_features_and_label, euclidean_distance
+from utils import read_data, divide_features_and_label, euclidean_distance
 
 
+def get_initial_k_centroids(x_train: pd.DataFrame, k) -> List[List[float]]:
+    """
+    Returns k random points from the training set as the initial centroids.
+    """
+    possible_centroids = list(range(0, len(x_train)))
+    random.shuffle(possible_centroids)
+    centroids = possible_centroids[:k]
 
-def kmeans_fit(x_train):
+    return [x_train.loc[centroid].tolist() for centroid in centroids]
 
+def get_new_centroids(x_train: pd.DataFrame, clusters: defaultdict(List[int])) -> List[List[float]]:
+    """
+    Returns the new centroids based on the mean of the points in each cluster.
+    """
+    new_centroids = []
+    for centroid, elements in clusters.items():
+        mean = np.sum(x_train.loc[elements])/len(elements)  
+        new_centroids.append(mean.tolist())      
 
+    return new_centroids
+
+def cluster_samples(x_train: pd.DataFrame, centroids: List[List[float]]) -> defaultdict(List[int]):
+    """
+    Returns a dictionary of clusters, where the key is the centroid and the value is a list of samples that are closest to that centroid
+    """
+    centroid_members = defaultdict(list)
+    for sample_idx, sample in x_train.iterrows():
+        nearest_centroid_idx = min([(euclidean_distance(centroid, sample), idx) for idx, centroid in enumerate(centroids)])[1]
+        centroid_members[nearest_centroid_idx].append(sample_idx)
+
+    return centroid_members
+
+def kmeans_fit(x_train: pd.DataFrame, k = 3) -> (List[List[float]], defaultdict(List[int])):
+    """
+    Returns the centroids and the clusters of the samples.
+    """
+    centroids = get_initial_k_centroids(x_train, k)
+    centroid_members = cluster_samples(x_train, centroids)
+
+    while True:
+        new_centroids = get_new_centroids(centroid_members, x_train)
+        new_centroid_members = cluster_samples(x_train, new_centroids)
+        
+        if new_centroid_members == centroid_members:
+            break
+        centroid_members = new_centroid_members
+
+    return new_centroids, new_centroid_members
+
+def centroid_and_label_comparison(x_train: pd.DataFrame, y_train: pd.DataFrame) -> None:
+    
+    centroids, centroid_members = kmeans_fit(x_train)
+    
+    for centroid, elements in centroid_members.items():
+        for element in elements:
+            print(f"Centroid: {centroid}, label: {y_train[element]}")
 
 if __name__ == '__main__':
 
@@ -23,3 +78,6 @@ if __name__ == '__main__':
 
     x_test, y_test = divide_features_and_label(test_data) 
     x_train, y_train = divide_features_and_label(train_data) 
+
+    # kmeans_fit(x_train)
+    centroid_and_label_comparison(x_train, y_train)
