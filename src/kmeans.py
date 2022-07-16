@@ -45,13 +45,13 @@ def cluster_samples(x_train: pd.DataFrame, centroids: List[List[float]]) -> defa
 
 def kmeans_fit(x_train: pd.DataFrame, k = 3) -> (List[List[float]], defaultdict(List[int])):
     """
-    Returns the centroids and the clusters of the samples.
+    Returns the list with the centroid features and the clusters of the samples, where the key is the index of the centroid.
     """
     centroids = get_initial_k_centroids(x_train, k)
     centroid_members = cluster_samples(x_train, centroids)
 
     while True:
-        new_centroids = get_new_centroids(centroid_members, x_train)
+        new_centroids = get_new_centroids(x_train, centroid_members)
         new_centroid_members = cluster_samples(x_train, new_centroids)
         
         if new_centroid_members == centroid_members:
@@ -60,13 +60,18 @@ def kmeans_fit(x_train: pd.DataFrame, k = 3) -> (List[List[float]], defaultdict(
 
     return new_centroids, new_centroid_members
 
-def centroid_and_label_comparison(x_train: pd.DataFrame, y_train: pd.DataFrame) -> None:
-    
-    centroids, centroid_members = kmeans_fit(x_train)
-    
+def analysis(x_train, y_train, labels = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica'], k = 3) -> None:
+    """
+    Makes a comparison between the sample labels and the returned clusters.
+    """
+    centroids, centroid_members = kmeans_fit(x_train, k)
+
+    cm = pd.DataFrame(np.zeros((k, 3)), index = list(range(0, k)), columns = labels)
     for centroid, elements in centroid_members.items():
         for element in elements:
-            print(f"Centroid: {centroid}, label: {y_train[element]}")
+            cm.loc[centroid, y_train[element]] += 1
+    
+    print(cm)
 
 if __name__ == '__main__':
 
@@ -80,4 +85,4 @@ if __name__ == '__main__':
     x_train, y_train = divide_features_and_label(train_data) 
 
     # kmeans_fit(x_train)
-    centroid_and_label_comparison(x_train, y_train)
+    analysis(x_train, y_train)
