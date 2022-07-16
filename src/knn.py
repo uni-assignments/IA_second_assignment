@@ -3,10 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
+from typing import List
 from utils import read_data, divide_features_and_label, euclidean_distance
 from metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 
-def most_frequent(List: list) -> str:
+def most_frequent(List: List[str]) -> str:
     """
     Returns the most frequent element in a list. 
     Used to find the most frequent label in the k closest neighbors.
@@ -26,7 +27,7 @@ def knn_predict_single(new_sample: pd.Series, x_train: pd.DataFrame, y_train: pd
 
     return most_frequent([neighbor[1] for neighbor in nearest_neighboors])
 
-def knn_predict_multiple(x_train: pd.DataFrame, y_train: pd.DataFrame, x_test: pd.DataFrame, k) -> list: 
+def knn_predict_multiple(x_train: pd.DataFrame, y_train: pd.DataFrame, x_test: pd.DataFrame, k) -> List[str]: 
     """
     Returns a list of predictions for the test set.
     """
@@ -41,7 +42,6 @@ def knn_test(x_train: pd.DataFrame, y_train: pd.DataFrame, x_test: pd.DataFrame,
     Prints the accuracy, precision, recall and f1 score of the implemented knn algorithm for the dataset.
     """
     pred = knn_predict_multiple(x_train, y_train, x_test, k)
-    print(type(pred))
     print("Confusion Matrix:")
     print(confusion_matrix(pred, y_test))
     print("\nAccuracy:")

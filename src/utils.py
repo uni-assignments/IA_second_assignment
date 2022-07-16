@@ -7,12 +7,12 @@ def read_data(path: str) -> pd.DataFrame:
     """
     return pd.read_csv(path, sep=";", header = None, index_col = False)
 
-def divide_features_and_label(train_data: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
+def divide_features_and_label(data: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     """
     Divides the received dataframe into two dataframes, one with the features and one with the labels. 
     Returns both in a tuple.
     """
-    return train_data.iloc[:, :-1], train_data.iloc[:, -1].tolist()
+    return data.iloc[:, :-1], data.iloc[:, -1].tolist()
 
 def euclidean_distance(point1: pd.Series, point2: pd.Series) -> float:
     """
