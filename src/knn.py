@@ -7,12 +7,19 @@ from typing import List
 from utils import read_data, divide_features_and_label, euclidean_distance
 from metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 
-def most_frequent(List: List[str]) -> str:
+def weighted_most_frequent(pred: List[str], k, labels = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']) -> str:
     """
-    Returns the most frequent element in a list. 
+    Returns the most frequent element in a list making a weighted mean, closest neighbors are more valuable. 
     Used to find the most frequent label in the k closest neighbors.
     """
-    return max(set(List), key = List.count)
+    d = dict()
+    for label in labels:
+        d[label] = 0
+
+    for idx, p in enumerate(pred):
+        d[p] += (1 + (k - idx) * 1/k)
+
+    return heapq.nlargest(1, d, key=d.get)[0]
 
 def knn_predict_single(new_sample: pd.Series, x_train: pd.DataFrame, y_train: pd.DataFrame, k) -> str:
     """
@@ -25,7 +32,7 @@ def knn_predict_single(new_sample: pd.Series, x_train: pd.DataFrame, y_train: pd
 
     nearest_neighboors = heapq.nsmallest(k, heap)
 
-    return most_frequent([neighbor[1] for neighbor in nearest_neighboors])
+    return weighted_most_frequent([neighbor[1] for neighbor in nearest_neighboors], k)
 
 def knn_predict_multiple(x_train: pd.DataFrame, y_train: pd.DataFrame, x_test: pd.DataFrame, k) -> List[str]: 
     """

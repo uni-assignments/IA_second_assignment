@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from pip import main
-from collections import defaultdict
+from collections import defaultdict, Counter
 from typing import List
 
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
@@ -85,4 +85,4 @@ if __name__ == '__main__':
     x_train, y_train = divide_features_and_label(train_data) 
 
     # kmeans_fit(x_train)
-    analysis(x_train, y_train)
+    analysis(x_test, y_test, k = 3)
