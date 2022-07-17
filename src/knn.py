@@ -17,7 +17,7 @@ def weighted_most_frequent(pred: List[str], k, labels = ['Iris-setosa', 'Iris-ve
         d[label] = 0
 
     for idx, p in enumerate(pred):
-        d[p] += (1 + (k - idx) * 1/k)
+        d[p] += (1 + (k - idx) * 1/k)/2
 
     return heapq.nlargest(1, d, key=d.get)[0]
 
